@@ -11,6 +11,6 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'Homecontroller@index')->name('home');
+
+Route::resource('address', 'AddressBookController');
