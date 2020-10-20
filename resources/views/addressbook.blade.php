@@ -2,7 +2,11 @@
 
 
 @section('content')
-
+@if(session()->has('message'))
+    <div class="alert alert-success">
+        {{ session()->get('message') }}
+    </div>
+@endif
 <form  id='address'  method="POST"  enctype="multipart/form-data" action="{{url('/address')}}">
   @csrf
             <div class="row">
@@ -85,7 +89,7 @@
                  
                 <div class="form-group">
                           <label><strong>Cities :</strong></label>
-                          <select class="browser-default custom-select" name="categories[]">
+                          <select class="browser-default custom-select" name="city">
                               
                               <option selected disabled>Select</option>
                             @foreach($cities as $city)

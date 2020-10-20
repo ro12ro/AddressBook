@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\User;
 
 class AddressBookController extends Controller
 {
@@ -40,7 +42,7 @@ class AddressBookController extends Controller
     public function store(Request $request)
     {
         //
-    
+     
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|max:255',
             'lastname' => 'required|max:255',
@@ -52,7 +54,50 @@ class AddressBookController extends Controller
             'city' => 'required',
         ])->validate();
         
+        $file = $request->file('profile');
         
+        
+            
+            if (!empty($request->file('profile'))){
+             
+           $mime = $file->getMimeType();
+           $accepted_mimes = array("image/png", "image/jpeg");
+             if(in_array($mime, $accepted_mimes)){
+                 
+//               $res_file= $file->move(public_path().'/uploads',$file->getClientOriginalName());
+                 $pic=time().$file->getClientOriginalName();
+               $res_file = $file->move(public_path().'/uploads', $pic);  
+               
+             }else {
+                      return response()->json(array('error' => 1, 'msg' => "Image type is not valid"));
+
+                }
+        if (empty($res_file)) {
+                    echo json_encode(array('error' => 1, 'msg' => "file not uploded"));
+                    return;
+                }
+           }
+        
+        
+        
+        $slug = \Str::slug($request->firstname);
+        $users = new User();
+   
+    $users->first_name = $request->firstname;
+     $users->last_name = $request->lastname;
+    $users->email = $request->email;
+    $users->profile = $pic;
+    $users->phone = $request->phone;
+     $users->street = $request->street;
+      $users->zipcode = $request->zipcode;
+       $users->city = $request->city;
+       $users->slug = $slug;
+   
+    
+    
+   
+    $users->save();
+        return redirect()->back()->with('message', 'Successfully inserted');
        
     }
 
