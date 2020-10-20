@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AddressBookController extends Controller
 {
@@ -14,7 +16,9 @@ class AddressBookController extends Controller
     public function index()
     {
         //
-        return view("addressbook");
+        $cities['cities'] = DB::table('cities')->get();
+        
+        return view("addressbook",$cities);
     }
 
     /**
@@ -36,7 +40,20 @@ class AddressBookController extends Controller
     public function store(Request $request)
     {
         //
-        echo "Added";
+    
+        $validator = Validator::make($request->all(), [
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'zipcode' => 'required|max:255',
+            'phone' => 'required|numeric|min:10',
+            'street' => 'required',
+            'profile'=>'required|dimensions:min_width=150,min_height=150|mimes:jpeg,png,jpg,gif,webp,svg|max:300',
+            'city' => 'required',
+        ])->validate();
+        
+        
+       
     }
 
     /**
