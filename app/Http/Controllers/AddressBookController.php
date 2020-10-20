@@ -21,10 +21,18 @@ class AddressBookController extends Controller
     public function index()
     {
         //
-        $cities['cities'] = DB::table('cities')->get();
-       
         
-        return view("addressbook",$cities);
+        $records['cities'] = DB::table('cities')->get();
+        $records['records']=User::all();
+//       $users = Redis::get('user'.$records);
+//       Redis::set('addressdata',$records['records']);
+//       $get_records['records']=Redis::get('addressdata');
+//       dd($get_records);
+       if($get_records != null){
+           return view("addressbook",$get_records);
+       }
+        
+        return view("addressbook",$records);
     }
 
     /**
@@ -46,17 +54,8 @@ class AddressBookController extends Controller
     public function store(Request $request)
     {
         //
+       
      
-        $validator = Validator::make($request->all(), [
-            'firstname' => 'required|max:255',
-            'lastname' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'zipcode' => 'required|max:255',
-            'phone' => 'required|numeric|min:10',
-            'street' => 'required',
-            'profile'=>'required|dimensions:min_width=150,min_height=150|mimes:jpeg,png,jpg,gif,webp,svg|max:300',
-            'city' => 'required',
-        ])->validate();
         
         $file = $request->file('profile');
         
@@ -86,29 +85,73 @@ class AddressBookController extends Controller
         
         $slug = \Str::slug($request->firstname);
         $users = new User();
-   
-    $users->first_name = $request->firstname;
-     $users->last_name = $request->lastname;
-    $users->email = $request->email;
-    $users->profile = $pic;
-    $users->phone = $request->phone;
-     $users->street = $request->street;
-      $users->zipcode = $request->zipcode;
-       $users->city = $request->city;
-       $users->slug = $slug;
-   
-    
-    
-   
-    $users->save();
-    $Inserteduser=$users->id;
+    if($request->editid != '0'){
+       
+         $validator = Validator::make($request->all(), [
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255',
+           
+            'zipcode' => 'required|max:255',
+            'phone' => 'required|numeric|min:10',
+            'street' => 'required',
+           
+            'city' => 'required',
+        ])->validate();
+        
+          
+            $result = DB::table('users')
+    ->where('slug', $request->editid)
+    ->update([
+        'first_name' => $request->firstname,
+        'last_name' => $request->lastname,
+        
+        'phone' =>  $request->phone,
+        'street' => $request->street,
+        'zipcode' => $request->zipcode,
+        'city' => $request->city,
+        'profile' => $pic
+            
+    ]);
+              return redirect()->back()->with('message', 'Successfully updated');
+        }
+        else{
+            
+             $validator = Validator::make($request->all(), [
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'zipcode' => 'required|max:255',
+            'phone' => 'required|numeric|min:10',
+            'street' => 'required',
+            'profile'=>'required|dimensions:min_width=150,min_height=150|mimes:jpeg,png,jpg,gif,webp,svg|max:300',
+            'city' => 'required',
+        ])->validate();
+            
+        $users->first_name = $request->firstname;
+         $users->last_name = $request->lastname;
+        $users->email = $request->email;
+        $users->profile = $pic;
+        $users->phone = $request->phone;
+         $users->street = $request->street;
+          $users->zipcode = $request->zipcode;
+           $users->city = $request->city;
+           $users->slug = $slug;
+            $users->save();
+        $Inserteduser=$users->id;
    $record =User::find($Inserteduser);
    
     
     Mail::to($record->email)->send(new NewAddressBook());
+      return redirect()->back()->with('message', 'Successfully inserted');
+        }
+    
+    
+   
+   
+    
     
 
-        return redirect()->back()->with('message', 'Successfully inserted');
+      
        
     }
 
@@ -118,9 +161,14 @@ class AddressBookController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
         //
+        $edit['cities'] = DB::table('cities')->get();
+        $edit['edit']=User::where('slug',$slug)->first();
+        $edit['records']=User::all();
+       return view("addressbook",$edit);
+        
     }
 
     /**
@@ -152,8 +200,10 @@ class AddressBookController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($slug)
     {
         //
+       DB::table('users')->where('slug',$slug)->delete();
+       return redirect()->back()->with('message', 'Successfully deleted');
     }
 }

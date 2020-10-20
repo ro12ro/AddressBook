@@ -9,14 +9,17 @@
 @endif
 <form  id='address'  method="POST"  enctype="multipart/form-data" action="{{url('/address')}}">
   @csrf
+  @if(isset($edit))
+  <input type='hidden' value='{{$edit->slug}}' name='editid'>
+  @endif
             <div class="row">
                    
             <div class="col-sm-6">
                                
                             <div class="form-group {{ $errors->has('firstname') ? 'has-error' : '' }}" >
-                              <label>Title</label>
+                              <label>Firstname</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="firstname" id="firstname" placeholder="FirstName" class="form-control" value="{{old('firstname')}}">
+                              <input type="text" name="firstname" id="firstname" placeholder="FirstName" class="form-control" value="{{isset($edit)?$edit->first_name:old('firstname')}}">
                              
 
                               <span class="text-danger">{{ $errors->first('firstname') }}</span>
@@ -25,7 +28,7 @@
                           <div class="form-group {{ $errors->has('lastname') ? 'has-error' : '' }}" >
                               <label>LastName</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="lastname" id="lastname" placeholder="LastName" class="form-control" value="{{old('lastname')}}">
+                              <input type="text" name="lastname" id="lastname" placeholder="LastName" class="form-control" value="{{isset($edit)?$edit->last_name:old('lastname')}}">
                              
 
                               <span class="text-danger">{{ $errors->first('lastname') }}</span>
@@ -34,7 +37,7 @@
                           <div class="form-group {{ $errors->has('phone') ? 'has-error' : '' }}" >
                               <label>Phone No</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="phone" id="phone" placeholder="Phone" class="form-control" value="{{old('phone')}}">
+                              <input type="text" name="phone" id="phone" placeholder="Phone" class="form-control" value="{{isset($edit)?$edit->phone:old('phone')}}">
                              
 
                               <span class="text-danger">{{ $errors->first('phone') }}</span>
@@ -43,7 +46,7 @@
                           <div class="form-group {{ $errors->has('zipcode') ? 'has-error' : '' }}" >
                               <label>ZipCode</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="zipcode" id="zipcode" placeholder="ZipCode" class="form-control" value="{{old('zipcode')}}">
+                              <input type="text" name="zipcode" id="zipcode" placeholder="ZipCode" class="form-control" value="{{isset($edit)?$edit->zipcode:old('zipcode')}}">
                              
 
                               <span class="text-danger">{{ $errors->first('zipcode') }}</span>
@@ -68,11 +71,15 @@
                              </div>
                                  
                             </div>
-
-                          <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}" >
+                   
+                          <div class="form-group {{ $errors->has('email') ? 'has-error' : ''  }}" >
                               <label>Email</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="email" id="email" onkeyup="emailcheck(this)" placeholder="Email" class="form-control" value="{{old('email')}}">
+                                @if(isset($edit))
+                                <input type="text" name="email" id="email" onkeyup="emailcheck(this)" placeholder="Email" class="form-control" value="{{isset($edit)?$edit->email:old('email')}}" disabled>
+                                @else
+                              <input type="text" name="email" id="email" onkeyup="emailcheck(this)" placeholder="Email" class="form-control" value="{{isset($edit)?$edit->email:old('email')}}">
+                              @endif
                              
 
                               <span class="text-danger" id="espan">{{ $errors->first('email') }}</span>
@@ -81,7 +88,7 @@
                           <div class="form-group {{ $errors->has('street') ? 'has-error' : '' }}" >
                               <label>Street</label>
                                <span class="required" aria-required="true"> * </span>
-                              <input type="text" name="street" id="street" placeholder="Street" class="form-control" value="{{old('street')}}">
+                              <input type="text" name="street" id="street" placeholder="Street" class="form-control" value="{{isset($edit)?$edit->street:old('street')}}">
                              
 
                               <span class="text-danger">{{ $errors->first('street') }}</span>
@@ -90,20 +97,39 @@
                 <div class="form-group">
                           <label><strong>Cities :</strong></label>
                           <select class="browser-default custom-select" name="city">
+                              @if(isset($edit))
+                               <option selected value="{{$edit->city}}">{{$edit->city}}</option>
                               
+                             @else
                               <option selected disabled>Select</option>
+                              @endif
                             @foreach($cities as $city)
-                            <option value="{{$city->id}}">{{$city->name}}</option>
+                            <option value="{{$city->name}}">{{$city->name}}</option>
                             @endforeach
+                            
                           </select>
                           </div>
-
+    
+    
              <button class="btn btn-sm btn-success float-left" id="action" type="submit"><strong>Save</strong></button>                  
                        
             </div>
+                
 </form>   
+<div class="form-group">
+                          <label><strong>Cities :</strong></label>
+                          <select class="browser-default custom-select" name="city" id="city">
+                              
+                              <option selected >Select</option>
+                             
+                            @foreach($cities as $city)
+                            <option value="{{$city->name}}">{{$city->name}}</option>
+                            @endforeach
+                            
+                          </select>
+                          </div>
  <div class="col-sm-12">
-
+ 
 <table id="addresstable">
     <thead>
       <tr>
@@ -115,11 +141,29 @@
                <th>Phone</th>
                 <th>Zipcode</th>
                  <th>City</th>
+                 <th>Action</th>
       </tr>
       
     </thead>
     <tbody>
-        
+        @foreach($records as $record)
+        <tr>
+            <td>{{$record->first_name}}</td>
+             <td>{{$record->last_name}}</td>
+              <td>{{$record->email}}</td>
+               <td>{{$record->street}}</td>
+                <td>{{$record->profile}}</td>
+                 <td>{{$record->phone}}</td>
+                
+                   <td>{{$record->zipcode}}</td>
+                   <td>{{$record->city}}</td>
+                   <td> <a  class="dropdown-item" href="{{url('/edit/'.$record->slug)}}"><i class="fa fa-pencil"></i>Edit</a>
+                   
+                    <a  class="dropdown-item" href="{{url('/delete/'.$record->slug)}}"><i class="fa fa-trash"></i>Delete</a>
+                   
+                   </td>
+        </tr>
+        @endforeach
     </tbody>
   </table>
 </div>
@@ -130,11 +174,22 @@
             var fileName = e.target.files[0].name;
             $("#image").html(fileName);
         });
+        
+        $(function(){
+    var addtable=$("#addresstable").dataTable();
+    
+    
+    
+         $("#city").change(function() {
+        console.log("wewe");
+  var textSelected = $('#city option:selected').text();
+  addtable.fnFilter("^"+textSelected+"$", 7, true); // note columns(0) here
+});
+    
+  }); 
     });
    
-       $(function(){
-    $("#addresstable").dataTable();
-  }) 
+       
       function emailcheck(element){
         
     var email = $("#email").val();
