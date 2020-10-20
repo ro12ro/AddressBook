@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\User;
+use App\Mail\NewAddressBook;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redis;
 
 class AddressBookController extends Controller
 {
@@ -19,6 +22,7 @@ class AddressBookController extends Controller
     {
         //
         $cities['cities'] = DB::table('cities')->get();
+       
         
         return view("addressbook",$cities);
     }
@@ -97,6 +101,13 @@ class AddressBookController extends Controller
     
    
     $users->save();
+    $Inserteduser=$users->id;
+   $record =User::find($Inserteduser);
+   
+    
+    Mail::to($record->email)->send(new NewAddressBook());
+    
+
         return redirect()->back()->with('message', 'Successfully inserted');
        
     }

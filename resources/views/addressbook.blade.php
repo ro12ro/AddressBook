@@ -102,7 +102,27 @@
                        
             </div>
 </form>   
+ <div class="col-sm-12">
 
+<table id="addresstable">
+    <thead>
+      <tr>
+          <th>Firstname</th>
+           <th>Lastname</th>
+            <th>Email</th>
+             <th>Street</th>
+              <th>Profile</th>
+               <th>Phone</th>
+                <th>Zipcode</th>
+                 <th>City</th>
+      </tr>
+      
+    </thead>
+    <tbody>
+        
+    </tbody>
+  </table>
+</div>
 
 <script>
     $(document).ready(function(){
@@ -112,7 +132,9 @@
         });
     });
    
-        
+       $(function(){
+    $("#addresstable").dataTable();
+  }) 
       function emailcheck(element){
         
     var email = $("#email").val();
