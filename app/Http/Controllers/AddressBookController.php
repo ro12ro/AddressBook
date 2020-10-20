@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,8 @@ use App\Mail\NewAddressBook;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Cache;
+use Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
 
 class AddressBookController extends Controller
 {
@@ -27,12 +30,13 @@ class AddressBookController extends Controller
         $records['records']=User::all();
         
         
-        
+        $users=Cache::set('users.all', $records);
          if($records['records'] = Cache::get('users.all')){
-             return view("addressbook",$records);
+             return view("addressbook",$records['records']);
         }
         
-         $users=Cache::set('users.all', $records);
+         
+         
          
     }
 
@@ -44,8 +48,20 @@ class AddressBookController extends Controller
     public function create()
     {
         //
+        
     }
 
+    
+    public function csvexport(Request $request){
+      
+    
+    
+    return Excel::download(new DataExport,'address.csv');
+    
+    
+    }
+    
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -55,8 +71,18 @@ class AddressBookController extends Controller
     public function store(Request $request)
     {
         //
-       
+      
      
+             $validator = Validator::make($request->all(), [
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255',
+            'email' => 'required_without:editid|email|max:255|unique:users',
+            'zipcode' => 'required|max:255',
+            'phone' => 'required|numeric|min:10',
+            'street' => 'required',
+            'profile'=>'required_without:editid|image|mimes:jpeg,png,jpg,gif,svg|max:300|dimensions:width=300,height=300',
+            'cities' => 'required',
+        ])->validate();
         
         $file = $request->file('profile');
         
@@ -65,13 +91,13 @@ class AddressBookController extends Controller
             if (!empty($request->file('profile'))){
              
            $mime = $file->getMimeType();
-           $accepted_mimes = array("image/png", "image/jpeg");
+           $accepted_mimes = array("image/png", "image/jpeg","image/svg","image/gif","image/webp");
              if(in_array($mime, $accepted_mimes)){
                  
 //               $res_file= $file->move(public_path().'/uploads',$file->getClientOriginalName());
                  $pic=time().$file->getClientOriginalName();
                $res_file = $file->move(public_path().'/uploads', $pic);  
-               
+              
              }else {
                       return response()->json(array('error' => 1, 'msg' => "Image type is not valid"));
 
@@ -86,20 +112,13 @@ class AddressBookController extends Controller
         
         $slug = \Str::slug($request->firstname);
         $users = new User();
-    if($request->editid != '0'){
        
-         $validator = Validator::make($request->all(), [
-            'firstname' => 'required|max:255',
-            'lastname' => 'required|max:255',
-           
-            'zipcode' => 'required|max:255',
-            'phone' => 'required|numeric|min:10',
-            'street' => 'required',
-           
-            'city' => 'required',
-        ])->validate();
-        
-          
+    if(isset($request->editid)){
+      
+         
+        $editrecord = DB::table('users')
+    ->where('slug', $request->editid)->first();
+         
             $result = DB::table('users')
     ->where('slug', $request->editid)
     ->update([
@@ -109,8 +128,8 @@ class AddressBookController extends Controller
         'phone' =>  $request->phone,
         'street' => $request->street,
         'zipcode' => $request->zipcode,
-        'city' => $request->city,
-        'profile' => $pic
+        'city' => $request->cities,
+        'profile' => isset($pic)?$pic:$editrecord->profile,
             
     ]);
              $records['records']=User::all();
@@ -118,17 +137,8 @@ class AddressBookController extends Controller
               return redirect()->back()->with('message', 'Successfully updated');
         }
         else{
-            
-             $validator = Validator::make($request->all(), [
-            'firstname' => 'required|max:255',
-            'lastname' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'zipcode' => 'required|max:255',
-            'phone' => 'required|numeric|min:10',
-            'street' => 'required',
-            'profile'=>'required|dimensions:min_width=150,min_height=150|mimes:jpeg,png,jpg,gif,webp,svg|max:300',
-            'city' => 'required',
-        ])->validate();
+           
+         
             
         $users->first_name = $request->firstname;
          $users->last_name = $request->lastname;
@@ -137,14 +147,21 @@ class AddressBookController extends Controller
         $users->phone = $request->phone;
          $users->street = $request->street;
           $users->zipcode = $request->zipcode;
-           $users->city = $request->city;
+           $users->city = $request->cities;
            $users->slug = $slug;
             $users->save();
         $Inserteduser=$users->id;
    $record =User::find($Inserteduser);
    
     
-    Mail::to($record->email)->send(new NewAddressBook());
+    
+//
+//    Mail::send('mailbody', ['record'=>$record], function($message) use ($record)
+//{
+//         $message->from('ashokchavda193@gmail.com', 'Learning Laravel');
+//    $message->to($record->email,$record->first_name)->subject('Registered!');
+//});
+//dd(Mail::failures());
       return redirect()->back()->with('message', 'Successfully inserted');
         }
     
@@ -212,3 +229,11 @@ class AddressBookController extends Controller
        return redirect()->back()->with('message', 'Successfully deleted');
     }
 }
+
+class DataExport implements FromCollection{
+        
+        function collection(){
+            return User::all();
+        }
+        
+    }

@@ -9,9 +9,11 @@
 @endif
 <form  id='address'  method="POST"  enctype="multipart/form-data" action="{{url('/address')}}">
   @csrf
+  
   @if(isset($edit))
   <input type='hidden' value='{{$edit->slug}}' name='editid'>
   @endif
+  
             <div class="row">
                    
             <div class="col-sm-6">
@@ -63,8 +65,12 @@
                                  <span class="required" aria-required="true"> * </span>
                                 
                               <div class="custom-file">
-                                   
-                               <input id="logo" type="file" name="profile" class="custom-file-input">
+                                  @if(isset($edit))
+                                  <input id="logo" type="file" name="profile" class="custom-file-input" value="{{$edit->profile}}">
+                                  <img src="{{url('uploads/').'/'.$edit->profile}}" width="180px">
+                                  @else
+                               <input id="logo" type="file" name="profile" class="custom-file-input" value="">
+                               @endif
                                <span class="text-danger">{{ $errors->first('profile') }}</span>
                                <label for="logo" class="custom-file-label">Choose file...</label>
                                <span id="image">  </span>
@@ -96,7 +102,7 @@
                  
                 <div class="form-group">
                           <label><strong>Cities :</strong></label>
-                          <select class="browser-default custom-select" name="city">
+                          <select class="browser-default custom-select" name="cities">
                               @if(isset($edit))
                                <option selected value="{{$edit->city}}">{{$edit->city}}</option>
                               
@@ -108,6 +114,7 @@
                             @endforeach
                             
                           </select>
+                          <span class="text-danger">{{ $errors->first('cities') }}</span>
                           </div>
     
     
@@ -138,6 +145,9 @@
                           <input type="text" name="zipfilter" id="zipfilter" placeholder="Zipcode" class="form-control" value="">
                           </div>
         </div>
+     
+     <span data-href="/csvexport" id="export" class="btn btn-success btn-sm" onclick="exportTasks(event.target);">Export</span>
+     
 <table id="addresstable">
     <thead>
       <tr>
@@ -156,6 +166,7 @@
     <tbody>
        
         @foreach($records as $record)
+        
         <tr>
             <td>{{$record->first_name}}</td>
              <td>{{$record->last_name}}</td>
@@ -244,7 +255,10 @@ var pattern =/^\w+([-+.'][^\s]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
         
     };
   
-    
+    function exportTasks(_this) {
+      let _url = $(_this).data('href');
+      window.location.href = _url;
+   }
 
    
 

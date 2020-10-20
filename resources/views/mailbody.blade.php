@@ -1,4 +1,4 @@
-@component('mail::message')
+
 
 <!--This is the html to show in mail body-->
 
@@ -8,10 +8,9 @@
 </head>
 
 <body>
-    <p></p>
+    <p> Registered successfully </p>
 
 </body>
 
 </html>
 <!--This is the end of html to show in mail body-->
-@endcomponent

@@ -15,4 +15,5 @@ Route::get('/', 'Homecontroller@index')->name('home');
 
 Route::get('/edit/{slug}', 'AddressBookController@show');
 Route::get('/delete/{slug}', 'AddressBookController@destroy');
+Route::get('/csvexport', 'AddressBookController@csvexport');
 Route::resource('address', 'AddressBookController');
