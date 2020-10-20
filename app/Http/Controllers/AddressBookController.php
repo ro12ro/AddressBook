@@ -28,9 +28,9 @@ class AddressBookController extends Controller
 //       Redis::set('addressdata',$records['records']);
 //       $get_records['records']=Redis::get('addressdata');
 //       dd($get_records);
-       if($get_records != null){
-           return view("addressbook",$get_records);
-       }
+//       if($get_records != null){
+//           return view("addressbook",$get_records);
+//       }
         
         return view("addressbook",$records);
     }

@@ -116,8 +116,11 @@
             </div>
                 
 </form>   
-<div class="form-group">
-                          <label><strong>Cities :</strong></label>
+
+ <div class="col-sm-12">
+ <div class="col-sm-2">
+        <div class="form-group">
+                          <label><strong>City Filter :</strong></label>
                           <select class="browser-default custom-select" name="city" id="city">
                               
                               <option selected >Select</option>
@@ -128,8 +131,13 @@
                             
                           </select>
                           </div>
- <div class="col-sm-12">
- 
+        </div>
+     <div class="col-sm-2">
+        <div class="form-group">
+                          <label><strong>Zipcode Filter :</strong></label>
+                          <input type="text" name="zipfilter" id="zipfilter" placeholder="Zipcode" class="form-control" value="">
+                          </div>
+        </div>
 <table id="addresstable">
     <thead>
       <tr>
@@ -146,6 +154,7 @@
       
     </thead>
     <tbody>
+       
         @foreach($records as $record)
         <tr>
             <td>{{$record->first_name}}</td>
@@ -165,7 +174,9 @@
         </tr>
         @endforeach
     </tbody>
+     
   </table>
+     
 </div>
 
 <script>
@@ -176,17 +187,38 @@
         });
         
         $(function(){
-    var addtable=$("#addresstable").dataTable();
+    var addtable=$("#addresstable").DataTable();
     
     
     
          $("#city").change(function() {
         console.log("wewe");
-  var textSelected = $('#city option:selected').text();
+  var textSelected = $('#city option:selecte').text();
   addtable.fnFilter("^"+textSelected+"$", 7, true); // note columns(0) here
 });
     
+     $("#zipfilter").on( 'keyup change', function () {
+        addtable
+            .column( 6 )
+            .search( this.value )
+            .draw();
+    } );
+        
+        
+//    $('input[name=zipfilter]').keypress(function() { 
+//     if ( addtable.column(6).search() !== this.value ) {
+//                addtable
+//                    .column(6)
+//                    .search( this.value )
+//                    .draw();
+//            }
+//    
+//    });
+    
   }); 
+  
+  
+  
     });
    
        
