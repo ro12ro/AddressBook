@@ -10,6 +10,7 @@ use App\User;
 use App\Mail\NewAddressBook;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 
 class AddressBookController extends Controller
 {
@@ -24,15 +25,15 @@ class AddressBookController extends Controller
         
         $records['cities'] = DB::table('cities')->get();
         $records['records']=User::all();
-//       $users = Redis::get('user'.$records);
-//       Redis::set('addressdata',$records['records']);
-//       $get_records['records']=Redis::get('addressdata');
-//       dd($get_records);
-//       if($get_records != null){
-//           return view("addressbook",$get_records);
-//       }
         
-        return view("addressbook",$records);
+        
+        
+         if($records['records'] = Cache::get('users.all')){
+             return view("addressbook",$records);
+        }
+        
+         $users=Cache::set('users.all', $records);
+         
     }
 
     /**
