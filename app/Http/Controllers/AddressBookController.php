@@ -113,6 +113,8 @@ class AddressBookController extends Controller
         'profile' => $pic
             
     ]);
+             $records['records']=User::all();
+       $users=Cache::set('users.all', $records['records']);
               return redirect()->back()->with('message', 'Successfully updated');
         }
         else{
@@ -204,7 +206,9 @@ class AddressBookController extends Controller
     public function destroy($slug)
     {
         //
-       DB::table('users')->where('slug',$slug)->delete();
+      DB::table('users')->where('slug',$slug)->delete();
+        $records['records']=User::all();
+       $users=Cache::set('users.all', $records['records']);
        return redirect()->back()->with('message', 'Successfully deleted');
     }
 }

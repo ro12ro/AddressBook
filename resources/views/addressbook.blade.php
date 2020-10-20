@@ -123,7 +123,7 @@
                           <label><strong>City Filter :</strong></label>
                           <select class="browser-default custom-select" name="city" id="city">
                               
-                              <option selected >Select</option>
+                              <option value="" selected >Select</option>
                              
                             @foreach($cities as $city)
                             <option value="{{$city->name}}">{{$city->name}}</option>
@@ -161,7 +161,7 @@
              <td>{{$record->last_name}}</td>
               <td>{{$record->email}}</td>
                <td>{{$record->street}}</td>
-                <td>{{$record->profile}}</td>
+               <td><img src="{{url('uploads/').'/'.$record->profile}}" width="80px"></td>
                  <td>{{$record->phone}}</td>
                 
                    <td>{{$record->zipcode}}</td>
@@ -192,12 +192,16 @@
     
     
          $("#city").change(function() {
+             var addtable=$("#addresstable").dataTable();
         console.log("wewe");
-  var textSelected = $('#city option:selecte').text();
+  var textSelected = $('#city option:selected').val();
+  
   addtable.fnFilter("^"+textSelected+"$", 7, true); // note columns(0) here
+  
 });
     
      $("#zipfilter").on( 'keyup change', function () {
+         var addtable=$("#addresstable").DataTable();
         addtable
             .column( 6 )
             .search( this.value )
